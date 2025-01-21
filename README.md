@@ -1,2 +1,2 @@
-# texture-scrape
-self-supervised texture scraping, synthesis, and editing from natural images
+# dense-sketch
+photo-sketch dense correspondence model implemented in pytorch
