@@ -1,2 +1,2 @@
-# dense-sketch
-photo-sketch dense correspondence model implemented in pytorch
+# sketch-warp
+self-supervised learning for dense correspondences between photos and sketches, enabling image warping onto sketches, all in pytorch
