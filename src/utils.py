@@ -5,13 +5,15 @@ import random
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Tuple
-from logging import getLogger, INFO, Logger , \
-StreamHandler, FileHandler, Formatter
+from logging import getLogger, INFO, \
+    Logger , StreamHandler, FileHandler, Formatter
 
 import numpy as np
 import pandas as pd
+
 import torch
 from torch import nn
+
 from ptflops import get_model_complexity_info
 
 
