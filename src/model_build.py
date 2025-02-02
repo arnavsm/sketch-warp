@@ -5,6 +5,9 @@ from config import Config
 from utils import *
 
 # simplified model architecture
+
+
+
 class CorrespondenceModel(nn.Module):
     def __init__(self, **args):
         super().__init__()

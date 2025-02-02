@@ -8,10 +8,12 @@ class InfoNCE(nn.Module):
         super(InfoNCE, self).__init__()
         self.temperature = temperature
     
-    def forward(self, q: torch.Tensor,          # (B, D)
+    def forward(self, 
+                q: torch.Tensor,          # (B, D)
                 k_pos: torch.Tensor,          # (B, D)
                 k_neg: torch.Tensor           # (B, N, D)
-                ) -> torch.Tensor:
+        ) -> torch.Tensor:
+        
         num = torch.exp(torch.sum((q * k_pos), axis=1) / self.temperature)
         q = q.unsqueeze(1)
         denom = num + torch.sum(torch.exp(torch.sum(q * k_neg, dim=2) / self.temperature), dim=1)
