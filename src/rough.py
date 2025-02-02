@@ -11,7 +11,7 @@ def test():
     A = A.unsqueeze(1)
 
     # Dot product along the last axis (dimension D)
-    result = torch.sum(A * B, dim=(1, 2)
+    result = torch.sum(A * B, dim=(1, 2))
 
     print(result.shape)
 
