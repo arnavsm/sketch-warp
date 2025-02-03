@@ -1,43 +1,33 @@
 import os
 import gc
-import json
 import random
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Tuple
-from logging import getLogger, INFO, \
-    Logger , StreamHandler, FileHandler, Formatter
-
-import numpy as np
-import pandas as pd
-
+from typing import Dict
+from logging import getLogger, INFO, Logger , StreamHandler, FileHandler, Formatter
 import torch
 from torch import nn
-
+from torchmetrics.functional import accuracy as torch_accuracy
 from ptflops import get_model_complexity_info
+import numpy as np
 
 
 def seed_everything(seed=42):
-    """
-    Set a seed for reproducibility across various libraries.
-    """
     random.seed(seed)
-    os.environ["PYTHONHASHSEED"] = str(
-        seed
-    )  # Set the PYTHONHASHSEED environment variable
-    np.random.seed(seed)  # Set the seed for NumPy
-    torch.manual_seed(seed)  # Set the seed for PyTorch
-    torch.cuda.manual_seed(seed)  # Set the seed for CUDA (if using GPU)
-    torch.backends.cudnn.deterministic = True  # Make CuDNN deterministic
-
+    os.environ["PYTHONHASHSEED"] = str(seed)  
+    np.random.seed(seed)  
+    torch.manual_seed(seed)  
+    try:
+        torch.cuda.manual_seed(seed)  
+        torch.backends.cudnn.deterministic = True
+    except Exception as e:
+        print(f"GPU Not Available")
+        return None, None
 
 def setup_logger(
         model_name: str, 
         logging_dir: str
 ) -> Logger:
-    """
-    Set up a logger for tracking model performance and events.
-    """
     log_dir = os.path.join(logging_dir, model_name)
     os.makedirs(log_dir, exist_ok=True)  # Ensure the log directory exists
     log_file = os.path.join(log_dir, f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
@@ -66,9 +56,6 @@ def save_model(
         target_dir: str, 
         model_name: str
 ):
-    """
-    Save the model's state dictionary to a given directory.
-    """
     target_dir_path = Path(target_dir)
     target_dir_path.mkdir(
         parents=True, exist_ok=True
@@ -90,9 +77,6 @@ def load_model(
         target_dir: str, 
         model_name: str
 ):
-    """
-    Load the model's state dictionary from a given directory.
-    """
     assert model_name.endswith(".pth") or model_name.endswith(
         ".pt"
     ), "model_name should end with '.pt' or '.pth'"
@@ -108,54 +92,13 @@ def load_model(
     return model
 
 
-def save_metrics_report(
-        report: Dict, 
-        model_name: str, 
-        epoch: int, 
-        save_dir: str
-):
-    """
-    Save the metrics report as a JSON file for each epoch.
-    """
-    report_dir = os.path.join(save_dir, model_name)
-    os.makedirs(report_dir, exist_ok=True) 
-
-    report_filename = (
-        f"metrics_epoch_{epoch+1}.json" 
-    )
-    report_path = os.path.join(report_dir, report_filename)
-
-    # Save the report as a JSON file
-    with open(report_path, "w") as report_file:
-        json.dump(report, report_file, indent=4)
-
-    print(
-        f"[INFO] Saved metrics report for {model_name}, epoch {epoch+1} at {report_path}"
-    )
-
-
 def clear_model_from_memory(model: nn.Module):
-    """
-    Clears the specified model from memory to free up resources.
-
-    Args:
-        model (torch.nn.Module): The PyTorch model to be cleared from memory.
-    """
     del model
     gc.collect()
     torch.cuda.empty_cache()
 
 
 def model_size_mb(model: nn.Module):
-    """
-    Calculates the size of the model's parameters in megabytes (MB).
-
-    Args:
-        model (nn.Module): The PyTorch model whose parameter size is to be calculated.
-
-    Returns:
-        float: The size of the model's parameters in megabytes.
-    """
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     size_in_bytes = total_params * 4
     size_in_mb = size_in_bytes / (1024**2)
@@ -167,28 +110,6 @@ def count_model_flops_params(
     input_size: tuple =(3, 224, 224), 
     print_results: bool =True
 ):
-    """
-    Calculates and optionally prints the FLOPs (Floating Point Operations) and number of parameters
-    for a given PyTorch model.
-
-    Args:
-        model (nn.Module): The target PyTorch model for which to compute the FLOPs and parameters.
-        input_size (tuple, optional): The size of the input tensor. Default is (3, 224, 224),
-                                       which represents a 3-channel image of size 224x224 pixels.
-        print_results (bool, optional): If True, prints the calculated FLOPs and parameters.
-                                         Default is True.
-
-    Returns:
-        tuple: A tuple containing two elements:
-            - gflops (float): The computed FLOPs of the model in GFLOPs (Giga Floating Point Operations).
-            - params (float): The number of parameters in the model in millions (M).
-
-    Notes:
-        - The function uses the `ptflops` library to calculate the number of MACs (Multiply-Accumulate Operations)
-          and parameters.
-        - MACs are converted to GFLOPs by dividing by 1e9 (1 billion).
-        - If an error occurs during computation, it will be printed, and the function will return (None, None).
-    """
     try:
         macs, params = get_model_complexity_info(
             model,
@@ -208,3 +129,67 @@ def count_model_flops_params(
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return None, None
+
+
+def accuracy(output, target, topk=(1,)):
+    with torch.no_grad():
+        batch_size = target.size(0)
+        res = []
+        
+        for k in topk:
+            # Use torchmetrics accuracy function
+            # Convert to float32 to ensure compatibility
+            acc = torch_accuracy(
+                output.float(), 
+                target,
+                task="multiclass",
+                num_classes=output.size(1),
+                top_k=k
+            )
+            # Multiply by 100 to match original function's percentage output
+            res.append(acc.mul_(100.0))
+        return res
+
+
+class AverageMeter(object):
+    def __init__(self, name, fmt=':f', category="train"):
+        self.name = name
+        self.category = category
+        self.fmt = fmt
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
+
+    def log(self, writer, n):
+        writer.add_scalar(self.category + "/" + self.name, self.val, n)
+
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
+
+
+class ProgressMeter(object):
+    def __init__(self, num_batches, meters, prefix=""):
+        self.batch_fmtstr = self._get_batch_fmtstr(num_batches)
+        self.meters = meters
+        self.prefix = prefix
+
+    def display(self, batch):
+        entries = [self.prefix + self.batch_fmtstr.format(batch)]
+        entries += [str(meter) for meter in self.meters]
+        print('\t'.join(entries))
+
+    def _get_batch_fmtstr(self, num_batches):
+        num_digits = len(str(num_batches // 1))
+        fmt = '{:' + str(num_digits) + 'd}'
+        return '[' + fmt + '/' + fmt.format(num_batches) + ']'
