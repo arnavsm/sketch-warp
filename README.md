@@ -1,2 +1,54 @@
-# sketch-warp
-self-supervised learning for dense correspondences between photos and sketches, enabling image warping onto sketches, all in pytorch
+# SketchWarp
+
+Self-supervised learning framework for establishing dense correspondences between photographs and sketches, enabling automatic image warping onto sketch templates. Built with PyTorch.
+
+## Features
+
+- Implements the paper [`Learning Dense Correspondences between Photos and Sketches`](misc/2307.12967v1.pdf)
+- Self-supervised training pipeline
+- Image warping capabilities
+- PyTorch-based implementation
+
+## Installation
+
+Create the conda environment:
+```bash
+conda env create -f environment.yml
+```
+
+Activate the environment:
+```bash
+conda activate warp_env
+```
+
+## Quick Start
+
+```python
+from sketchwarp import SketchWarp
+
+model = SketchWarp()
+warped_image = model.warp(source_image, target_sketch)
+```
+
+## Requirements
+
+Environment requirements are specified in `environment.yml`. Key dependencies include:
+- PyTorch >= 2.5
+- Python >= 3.10
+- CUDA (optional for inference, for GPU support)
+
+## License
+
+This repository is licensed under the `MIT License`, allowing for its use in research and educational purposes.
+
+## Citation
+
+If you use this code in your research, please cite:
+
+```bibtex
+@misc{sketchwarp2025,  
+  title={SketchWarp: Self-Supervised Learning for Photo-Sketch Dense Correspondences},  
+  author={[Arnav Samal]},  
+  year={2025}  
+}  
+```
