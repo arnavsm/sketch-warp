@@ -5,8 +5,8 @@ Self-supervised learning framework for establishing dense correspondences betwee
 ## Features
 
 - Implements the paper [`Learning Dense Correspondences between Photos and Sketches`](misc/2307.12967v1.pdf)
-- Self-supervised training pipeline
-- Image warping capabilities
+- Self-supervised training and evaluation pipeline
+- Image-to-Sketch warping capabilities
 - PyTorch-based implementation
 
 ## Installation

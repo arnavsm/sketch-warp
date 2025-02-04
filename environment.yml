@@ -37,6 +37,8 @@ dependencies:
   - ipykernel  # Jupyter Notebook support
   - jupyterlab  # Jupyter environment
   - psutil  # For system performance monitoring
+  - gdown # For downloading files from Google Drive
+  - ptflops # For computing the number of FLOPs (Floating Point Operations) in PyTorch models
 
   # Optional: Install pip packages
   - pip:
