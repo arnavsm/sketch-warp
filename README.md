@@ -21,15 +21,6 @@ Activate the environment:
 conda activate warp_env
 ```
 
-## Quick Start
-
-```python
-from sketchwarp import SketchWarp
-
-model = SketchWarp()
-warped_image = model.warp(source_image, target_sketch)
-```
-
 ## Requirements
 
 Environment requirements are specified in `environment.yml`. Key dependencies include:

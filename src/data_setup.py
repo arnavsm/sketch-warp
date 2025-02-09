@@ -4,18 +4,13 @@ import numpy as np
 from PIL import Image
 import torchvision.transforms as transforms
 import torchvision.transforms.functional as TF
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from functools import lru_cache
 
 
 class WarpDataset(Dataset):
     def __init__(
-            self, 
-            csv_path, 
-            data_path, 
-            mode, 
-            mix_within_class=False, 
-            num_photo_per_class=90
+        self, csv_path, data_path, mode, mix_within_class=False, num_photo_per_class=90
     ):
         self.csv = pd.read_csv(csv_path)
         self.data_path = data_path
@@ -115,3 +110,35 @@ class WarpDataset(Dataset):
         sketch = self.norm(self.trans(sketch))
 
         return photo, sketch, kp1, kp2
+
+
+class MultiEpochsDataLoader(DataLoader):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._DataLoader__initialized = False
+        self.batch_sampler = _RepeatSampler(self.batch_sampler)
+        print("sampler initialized")
+        self._DataLoader__initialized = True
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield next(self.iterator)
+
+
+class _RepeatSampler(object):
+    """ Sampler that repeats forever.
+    Args:
+        sampler (Sampler)
+    """
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def __iter__(self):
+        while True:
+            yield from iter(self.sampler)

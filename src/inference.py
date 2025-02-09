@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model_build import CorrespondenceModel
+from models.correspondence import CorrespondenceModel
 from utils import *
 
 
