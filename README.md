@@ -2,12 +2,18 @@
 
 Self-supervised learning framework for establishing dense correspondences between photographs and sketches, enabling automatic image warping onto sketch templates. Built with PyTorch.
 
+<!-- Below are some example results showing photo-to-sketch warping:
+
+![Examples of photo-to-sketch warping](misc/assets/examples.gif) -->
+
 ## Features
 
 - Implements the paper [`Learning Dense Correspondences between Photos and Sketches`](misc/2307.12967v1.pdf)
 - Self-supervised training and evaluation pipeline
 - Image-to-Sketch warping capabilities
 - PyTorch-based implementation
+
+<!-- ![Diagram of Self-Supervised Framework](misc/assets/framework_diagram.png) -->
 
 ## Installation
 
