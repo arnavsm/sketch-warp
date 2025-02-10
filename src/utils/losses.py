@@ -10,9 +10,9 @@ class InfoNCE(nn.Module):
 
     def forward(
         self,
-        q: torch.Tensor,  # (B, D)
-        k_pos: torch.Tensor,  # (B, D)
-        k_neg: torch.Tensor,  # (B, N, D)
+        q: torch.Tensor,        # (B, D)
+        k_pos: torch.Tensor,    # (B, D)
+        k_neg: torch.Tensor,    # (B, N, D)
     ) -> torch.Tensor:
 
         num = torch.exp(torch.sum((q * k_pos), axis=1) / self.temperature)

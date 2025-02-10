@@ -1,3 +1,7 @@
+import torch
+from torchmetrics.functional import accuracy as torch_accuracy
+
+
 class AverageMeter(object):
     def __init__(self, name, fmt=":f", category="train"):
         self.name = name
@@ -40,3 +44,20 @@ class ProgressMeter(object):
         num_digits = len(str(num_batches // 1))
         fmt = "{:" + str(num_digits) + "d}"
         return "[" + fmt + "/" + fmt.format(num_batches) + "]"
+
+
+def accuracy(output, target, topk=(1,)):
+    with torch.no_grad():
+        batch_size = target.size(0)
+        res = []
+
+        for k in topk:
+            acc = torch_accuracy(
+                output.float(),
+                target,
+                task="multiclass",
+                num_classes=output.size(1),
+                top_k=k,
+            )
+            res.append(acc.mul_(100.0))
+        return res
