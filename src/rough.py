@@ -1,4 +1,7 @@
 import torch
+import timm
+
+model = timm.create_model 
 
 
 def test():

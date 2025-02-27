@@ -10,7 +10,7 @@ class CondBatchNorm2d(nn.Module):
     """
     def __init__(self, num_features, num_conds=2):
         super().__init__()
-        self.norms = nn.ModuleList([nn.BatchNorm2d(num_features)] * num_conds)
+        self.norms = nn.ModuleList([nn.BatchNorm2d(num_features) for _ in range(num_conds)])
 
     def forward(self, x, cond):
         """Applies batch normalization based on the given condition."""
@@ -21,7 +21,7 @@ class CustomResNet(nn.Module):
     """
     Custom ResNet with Conditional BatchNorm2d for domain-specific normalization.
     """
-    def __init__(self, model_name='resnet50', pretrained=True, num_classes=1000):
+    def __init__(self, model_name='resnet101', pretrained=True, num_classes=1000):
         super().__init__()
         self.base = timm.create_model(model_name, pretrained=pretrained, num_classes=num_classes)
         self._replace_bn_layers()
