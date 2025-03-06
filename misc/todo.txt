@@ -1,5 +1,5 @@
 TODO
-- models
+- models: moco, stns
 - training, eval scripts
 - stitching it all together
 
