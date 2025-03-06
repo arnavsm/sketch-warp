@@ -1,9 +1,9 @@
 TODO
+- models
 - training, eval scripts
 - stitching it all together
 
 
 DONE
-- models
 - utils
 - logging
