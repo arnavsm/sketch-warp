@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from encoder import create_conditional_resnet
+from encoder import resnet18, resnet101, resnet152
 from warp_estimator import MultiScaleSTN
 
 

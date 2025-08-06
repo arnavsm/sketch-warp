@@ -1,9 +1,19 @@
-TODO
+TODO:
 - models: moco, stns
 - training, eval scripts
 - stitching it all together
 
 
-DONE
+DONE:
 - utils
 - logging
+
+
+TO STUDY:
+- affinity matrix, displacement field
+- stn: architecture
+
+SCHEDULE:
+- FINISH IT
+- well-defined scope
+- use set of functional rqmts

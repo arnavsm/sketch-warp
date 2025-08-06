@@ -1,48 +1,41 @@
-name: warp_env  # Name of the Conda environment
+name: warp_env  
 channels:
   - pytorch
   - conda-forge
   - defaults
 dependencies:
-  # Core Python version
   - python=3.10
   
-  # Deep learning framework: PyTorch with GPU support (CUDA 12.2)
   - pytorch=2.5
   - torchvision=0.20
   - torchaudio=2.5
-  - pytorch-cuda=12.2  # Automatically handles GPU compatibility
+  - pytorch-cuda=12.2 
   
-  # Additional computer vision and machine learning libraries
-  - timm  # Pre-trained vision models (from HuggingFace)
-  - scikit-learn  # Machine learning utilities
-  - pandas  # Data manipulation and analysis
-  - numpy  # Numerical computation
-  - matplotlib  # Visualization
-  - seaborn  # Statistical data visualization
-  - scipy # Scientfic Computation
+  - timm  
+  - scikit-learn  
+  - pandas  
+  - numpy  
+  - matplotlib  
+  - seaborn  
+  - scipy
   
-  # Data preprocessing and augmentation
-  - albumentations  # Image augmentations
-  - pillow  # Image loading and processing
+  - albumentations
+  - pillow  
   
-  # Logging and experiment tracking
-  - tensorboard  # PyTorch's native visualization tool
-  - tqdm  # Progress bars
-  - wandb  # Weights and Biases for experiment tracking (optional)
+  - tensorboard  
+  - tqdm  
+  - wandb  
 
-  # Utilities
-  - pyyaml  # For handling YAML configs
-  - requests  # For downloading data/models
-  - ipykernel  # Jupyter Notebook support
-  - jupyterlab  # Jupyter environment
-  - psutil  # For system performance monitoring
-  - gdown # For downloading files from Google Drive
-  - ptflops # For computing the number of FLOPs (Floating Point Operations) in PyTorch models
+  - pyyaml  
+  - requests  
+  - ipykernel  
+  - jupyterlab  
+  - psutil  
+  - gdown 
+  - ptflops 
 
-  # Optional: Install pip packages
   - pip:
-      - torchsummary  # Summary of PyTorch models
-      - torchmetrics  # Metrics for PyTorch
-      - pytorch-lightning  # High-level training loop abstraction
-      - pycocotools  # COCO dataset utilities (e.g., for object detection projects)
+      - torchsummary  
+      - torchmetrics  
+      - pytorch-lightning  
+      - pycocotools
