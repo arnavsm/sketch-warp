@@ -6,7 +6,7 @@ channels:
 dependencies:
   - python=3.10
   
-  - pytorch=2.5
+  - pytorch=2.2
   - torchvision=0.20
   - torchaudio=2.5
   - pytorch-cuda=12.1 
@@ -41,3 +41,8 @@ dependencies:
       - kornia
       - tensorboard 
       - opencv-python-headless
+      - seaborn
+      - captum
+      - gpustat
+      - nvitop
+      - uv

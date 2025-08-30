@@ -1,0 +1,43 @@
+# Core
+python==3.10
+
+# PyTorch + CUDA 12.1
+torch==2.2.2+cu121 --extra-index-url https://download.pytorch.org/whl/cu121
+torchvision
+
+# ML/DL utils
+timm
+scikit-learn
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+albumentations
+pillow
+
+# Experiment tracking / utilities
+tqdm
+wandb
+pyyaml
+requests
+psutil
+gdown
+ptflops
+
+# Jupyter
+ipykernel
+jupyterlab
+
+# Additional pip packages
+torchsummary
+torchmetrics
+pytorch-lightning
+pycocotools
+kornia
+tensorboard
+opencv-python-headless
+captum
+gpustat
+nvitop
+uv
