@@ -42,15 +42,3 @@ Environment requirements are specified in `environment.yml`. Key dependencies in
 ## License
 
 This repository is licensed under the `MIT License`, allowing for its use in research and educational purposes.
-
-## Citation
-
-If you use this code in your research, please cite:
-
-```bibtex
-@misc{sketchwarp2025,  
-  title={SketchWarp: Self-Supervised Learning for Photo-Sketch Dense Correspondences},  
-  author={[Arnav Samal]},  
-  year={2025}  
-}  
-```
