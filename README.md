@@ -27,6 +27,11 @@ Activate the environment:
 conda activate warp_env
 ```
 
+Or instead of the above, you can simply:
+```bash
+bash scripts/setup.sh
+```
+
 ## Requirements
 
 Environment requirements are specified in `environment.yml`. Key dependencies include:

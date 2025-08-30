@@ -22,7 +22,6 @@ dependencies:
   - albumentations
   - pillow  
   
-  - tensorboard  
   - tqdm  
   - wandb  
 
@@ -40,3 +39,5 @@ dependencies:
       - pytorch-lightning  
       - pycocotools
       - kornia
+      - tensorboard 
+      - opencv-python-headless
