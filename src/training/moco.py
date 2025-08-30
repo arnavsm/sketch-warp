@@ -21,6 +21,9 @@ class MoCo(nn.Module):
         self.m = m
         self.T = T
 
+        # create the encoders
+        # num_classes is the output fc dimension
+
         self.encoder_q = encoder_q
         self.encoder_k = encoder_k
         dim_mlp = self.encoder_q.layer4[-1].conv1.weight.shape[1]
@@ -40,6 +43,7 @@ class MoCo(nn.Module):
             param_k.data.copy_(param_q.data)  # initialize
             param_k.requires_grad = False  # not update by gradient
 
+        # create the queue
         self.register_buffer("queue", torch.randn(dim, K))
         self.queue = nn.functional.normalize(self.queue, dim=0)
 
@@ -57,6 +61,7 @@ class MoCo(nn.Module):
 
     @torch.no_grad()
     def _dequeue_and_enqueue(self, keys):
+        # gather keys before updating queue
         keys = concat_all_gather(keys)
 
         batch_size = keys.shape[0]
@@ -64,6 +69,7 @@ class MoCo(nn.Module):
         ptr = int(self.queue_ptr)
         assert self.K % batch_size == 0  # for simplicity
 
+        # replace the keys at ptr (dequeue and enqueue)
         self.queue[:, ptr:ptr + batch_size] = keys.T
         ptr = (ptr + batch_size) % self.K  # move pointer
 
@@ -75,18 +81,23 @@ class MoCo(nn.Module):
         Batch shuffle, for making use of BatchNorm.
         *** Only support DistributedDataParallel (DDP) model. ***
         """
+        # gather from all gpus
         batch_size_this = x.shape[0]
         x_gather = concat_all_gather(x)
         batch_size_all = x_gather.shape[0]
 
         num_gpus = batch_size_all // batch_size_this
 
+        # random shuffle index
         idx_shuffle = torch.randperm(batch_size_all).cuda()
 
+        # broadcast to all gpus
         torch.distributed.broadcast(idx_shuffle, src=0)
 
+        # index for restoring
         idx_unshuffle = torch.argsort(idx_shuffle)
 
+        # shuffled index for this gpu
         gpu_idx = torch.distributed.get_rank()
         idx_this = idx_shuffle.view(num_gpus, -1)[gpu_idx]
 
@@ -98,12 +109,14 @@ class MoCo(nn.Module):
         Undo batch shuffle.
         *** Only support DistributedDataParallel (DDP) model. ***
         """
+        # gather from all gpus
         batch_size_this = x.shape[0]
         x_gather = concat_all_gather(x)
         batch_size_all = x_gather.shape[0]
 
         num_gpus = batch_size_all // batch_size_this
 
+        # restored index for this gpu
         gpu_idx = torch.distributed.get_rank()
         idx_this = idx_unshuffle.view(num_gpus, -1)[gpu_idx]
 
@@ -118,6 +131,7 @@ class MoCo(nn.Module):
             logits, targets
         """
 
+        # compute query features
         if return_map:
             q, q_res = self.encoder_q(im_q, cond_q, return_map=True)  # queries: NxC
             q = self.fc_q(q)
@@ -129,9 +143,11 @@ class MoCo(nn.Module):
 
         q = nn.functional.normalize(q, dim=1)
 
-        with torch.no_grad():  
-            self._momentum_update_key_encoder()  
+        # compute key features
+        with torch.no_grad():  # no gradient to keys
+            self._momentum_update_key_encoder()  # update the key encoder
 
+            # shuffle for making use of BN
             im_k, idx_unshuffle = self._batch_shuffle_ddp(im_k)
             k = self.encoder_k(im_k, cond_k, return_map=False)
             k = self.fc_k(k)
@@ -139,14 +155,23 @@ class MoCo(nn.Module):
             k = nn.functional.normalize(k, dim=1)
             k = self._batch_unshuffle_ddp(k, idx_unshuffle)
 
+        # compute logits
+        # Einstein sum is more intuitive
+        # positive logits: Nx1
         l_pos = torch.einsum('nc,nc->n', [q, k]).unsqueeze(-1)
+        # negative logits: NxK
         l_neg = torch.einsum('nc,ck->nk', [q, self.queue.clone().detach()])
 
+        # logits: Nx(1+K)
         logits = torch.cat([l_pos, l_neg], dim=1)
+
+        # apply temperature
         logits /= self.T
 
+        # labels: positive key indicators
         labels = torch.zeros(logits.shape[0], dtype=torch.long).cuda()
 
+        # dequeue and enqueue
         self._dequeue_and_enqueue(k)
 
         if return_map:

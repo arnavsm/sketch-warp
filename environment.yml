@@ -9,7 +9,7 @@ dependencies:
   - pytorch=2.5
   - torchvision=0.20
   - torchaudio=2.5
-  - pytorch-cuda=12.2 
+  - pytorch-cuda=12.1 
   
   - timm  
   - scikit-learn  
@@ -39,3 +39,4 @@ dependencies:
       - torchmetrics  
       - pytorch-lightning  
       - pycocotools
+      - kornia

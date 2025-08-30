@@ -292,7 +292,7 @@ class ResNet(nn.Module):
             cond = 0
         else:
             if cond is None:
-                raise ValueError("missing parameter 'cond'")
+                raise ValueError("missing parameter \'cond\'")
         return self._forward_impl(x, cond, return_map, corr_layer)
 
 

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 class Logger:
-    def __init__(self, log_interval=10, log_file="./logs/output.log", metrics=None):
+    def __init__(self, log_interval=10, log_file="logs/output.log", metrics=None):
         self.log_interval = log_interval
         self.log_file = log_file
         self.metrics = metrics or ["loss", "accuracy"]
