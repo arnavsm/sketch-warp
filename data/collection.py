@@ -4,7 +4,7 @@ import zipfile
 
 url = "https://drive.google.com/uc?id=1z4--ToTXYb0-2cLuUWPYM5m7ST7Ob3Ck"
 output_zip = "sketchy_database.zip"
-extract_dir = os.path.join("sketch-warp/data", "sketchy_database")
+extract_dir = os.path.join("data", "sketchy_database")
 
 
 def download_dataset(url, output_zip):

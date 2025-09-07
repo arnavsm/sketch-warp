@@ -1,8 +1,6 @@
 TODO:
-- study: paper - codebase
-- data download
-- inference - scripts
-- training - scripts
+- study: paper [90% DONE]- codebase
+- data download & run
 
 TO STUDY:
 - affinity matrix, displacement field
@@ -17,5 +15,6 @@ DONE:
 - utils
 - logging
 - model scripts
-- training scripts
+- training src & scripts
+- inference src & scripts
 - stitching it
