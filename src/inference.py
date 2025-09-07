@@ -5,6 +5,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from PIL import Image
+from torchvision import transforms
+
 from models import encoder
 from training import moco
 
@@ -19,17 +22,12 @@ from utils.visualization import prep_img_tensor, gen_graph
 parser = argparse.ArgumentParser(description='PyTorch Training')
 
 # data
-parser.add_argument('--csv-path', metavar='DIR',
-                    help='root path to csv files')
-parser.add_argument('--data-path', metavar='DIR',
-                    help='root path to dataset')
+parser.add_argument('--photo-path', metavar='DIR',
+                    help='path to photo')
+parser.add_argument('--sketch-path', metavar='DIR',
+                    help='path to sketch')
 parser.add_argument('--output-dir', metavar='DIR', default='./outputs',
                     help='path to save outputs')
-
-
-# job
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
-                    help='number of data loading workers')
 
 # model arch
 parser.add_argument('--arch', metavar='ARCH', default='resnet18',
@@ -48,16 +46,26 @@ args = parser.parse_args()
 
 ############################
 # Initialization
-
 if not os.path.exists(args.output_dir):
     os.makedirs(args.output_dir)
 
-test_csv = os.path.join(args.csv_path, "test_pairs_ps.csv")
+# Image transformations
+transform = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
 
-dataset = PhotoSketchDataset(test_csv, args.data_path, mode="test")
-dataloader = DataLoader(dataset, batch_size=1, num_workers=4)
+# Load images
+photo = Image.open(args.photo_path).convert('RGB')
+sketch = Image.open(args.sketch_path).convert('RGB')
 
-print("Dataset loaded.")
+# Apply transformations
+photo = transform(photo).unsqueeze(0).cuda()
+sketch = transform(sketch).unsqueeze(0).cuda()
+
+print("Images loaded and transformed.")
 
 # import the original or the conditional BN version of ResNet
 if args.cbn:
@@ -86,38 +94,18 @@ print("Model loaded.")
 
 image_size = 256
 with torch.no_grad():
-    for i, data in tqdm(enumerate(dataloader), total=len(dataloader)):
-        photo, sketch, _, _ = data
+    # get feature maps
+    _, photo_res = model.encoder_q(photo, cond=0, return_map=True)
+    _, sketch_res = model.encoder_q(sketch, cond=1, return_map=True)
 
-        photo = photo.cuda(non_blocking=True)
-        sketch = sketch.cuda(non_blocking=True)
+    # estimate displacement field
+    fwd_flow, bwd_flow = model.forward_stn(photo_res, sketch_res)
+    
+    warp_photo = model.spatial_transform(photo, bwd_flow)
+    
+    # Save the warped photo
+    from torchvision.utils import save_image
+    output_path = os.path.join(args.output_dir, 'generated_sketch.png')
+    save_image(warp_photo, output_path)
 
-        # get feature maps
-        _, photo_res = model.encoder_q(photo, cond=0, return_map=True)
-        _, sketch_res = model.encoder_q(sketch, cond=1, return_map=True)
-
-        # estimate displacement field
-        fwd_flow, bwd_flow = model.forward_stn(photo_res, sketch_res)
-        
-        warp_photo = model.spatial_transform(photo, bwd_flow)
-        warp_sketch = model.spatial_transform(sketch, fwd_flow)
-
-        # prepare for visualization
-        mem = {
-            "image1": [prep_img_tensor(photo)],
-            "image2": [prep_img_tensor(sketch)],
-            "warp_image12": [prep_img_tensor(warp_sketch)],
-            "warp_image21": [prep_img_tensor(warp_photo)],
-            "weight3_1": [None],
-            "weight3_2": [None],
-            "dist": [None],
-            "res2_1": [photo_res[0].mean(1)],
-            "res2_2": [sketch_res[0].mean(1)],
-            "res3_1": [photo_res[1].mean(1)],
-            "res3_2": [sketch_res[1].mean(1)],
-        }
-        
-        fig = gen_graph(mem)
-        fig.savefig(os.path.join(args.output_dir, f'output_{i}.png'), bbox_inches='tight')
-
-print(f"Inference complete. Visualizations saved to {args.output_dir}")
+print(f"Inference complete. Generated sketch saved to {output_path}")
